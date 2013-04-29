@@ -23,12 +23,18 @@ class testApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+        void updateSequencer();
+        void detectMotion();
     
         ofxKinect kinect;
     
         ofxCvColorImage colorImg;
 	
         ofxCvGrayscaleImage grayImage; // grayscale depth image
+        ofxCvGrayscaleImage prevGrayImage;
+        ofxCvGrayscaleImage diffImage;
+
+    
         ofxCvGrayscaleImage grayThreshNear; // the near thresholded image
         ofxCvGrayscaleImage grayThreshFar; // the far thresholded image
 	
@@ -41,13 +47,15 @@ class testApp : public ofBaseApp{
 	
         int angle;
     
-        int rotation;
+        float rotation;
         vector <dots> notes;
         ofPoint circle;
         float radius;
     
         ofxOscSender sender;
 
+        int maxBrightness;
+        int totalMov;
     
         //vector <ofPoint> notes;
 

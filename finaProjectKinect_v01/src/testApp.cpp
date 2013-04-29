@@ -17,6 +17,8 @@ void testApp::setup(){
     
     colorImg.allocate(kinect.width, kinect.height);
 	grayImage.allocate(kinect.width, kinect.height);
+    prevGrayImage.allocate(kinect.width, kinect.height);
+    diffImage.allocate(kinect.width, kinect.height);
 	grayThreshNear.allocate(kinect.width, kinect.height);
 	grayThreshFar.allocate(kinect.width, kinect.height);
 	
@@ -44,7 +46,13 @@ void testApp::update(){
 		
 		// load grayscale depth image from the kinect source
 		grayImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-		
+        
+        // detect motion before thresholding CV image
+        detectMotion();
+        
+        // update sequencer before thresholding CV image
+        updateSequencer();
+        
 		// we do two thresholds - one for the far plane and one for the near plane
 		// we then do a cvAnd to get the pixels which are a union of the two thresholds
 			grayThreshNear = grayImage;
@@ -64,9 +72,7 @@ void testApp::update(){
 
     //sequencer update
     
-    rotation += 1;
-    if (rotation > 359) rotation = 0;
-
+    
     
 }
 
@@ -104,7 +110,7 @@ void testApp::draw(){
     grayImage.draw(10, 320, 400, 300);
     contourFinder.draw(10, 320, 400, 300);
     
-    notes.clear();
+    //notes.clear();
     ofSetColor(255, 0, 0);
     
     for( int i=0; i<(int)contourFinder.blobs.size(); i++ ) {
@@ -117,41 +123,26 @@ void testApp::draw(){
         y = ofMap(y, 0, kinect.height, 0, ofGetScreenHeight());
         dots myDot;
         myDot.setup(x, y);
-        notes.push_back( myDot );
         
-        //ofCircle(myNote, 20);
-        
-		/*ofRect( contourFinder.blobs[i].boundingRect.x, contourFinder.blobs[i].boundingRect.y,
-               contourFinder.blobs[i].boundingRect.width, contourFinder.blobs[i].boundingRect.height );
-         */
-	}
-    
-    for (int i = 0; i < notes.size(); i++) {
-        
-        ofSetColor(255);
-        
-        //cout << rotation << endl;
-        // << int(notes[i].angle) << endl;
-        
-        if (rotation == int(notes[i].angle)) {
+        if (rotation == int(myDot.angle)) {
             
             ofSetColor(0);
             
             ofxOscMessage message;
             message.setAddress("/playtone");
-            message.addIntArg( notes[i].note );
+            message.addIntArg( myDot.note );
             sender.sendMessage(message);
             
-            cout << int(notes[i].angle) << endl;
+            //cout << int(myDot.angle) << endl;
             
             
         }
         
-        notes[i].draw();
-        
-        
-        
-    }
+
+        myDot.draw();
+
+	}
+    
     
     
     
@@ -211,3 +202,44 @@ void testApp::exit() {
 	kinect2.close();
 #endif
 }
+
+void testApp::updateSequencer(){
+    
+    unsigned char * pix = grayImage.getPixels();
+    
+    maxBrightness = 0;
+    
+    int numPixels = grayImage.getWidth() * grayImage.getHeight();
+    for(int i = 0; i < numPixels; i++) {
+        if(pix[i] > maxBrightness) maxBrightness = pix[i];
+    }
+    
+    if (maxBrightness > 200) {
+        rotation += MAX (0.1, totalMov/1000);
+        
+    } else {
+        
+        rotation -= MAX (0.1, totalMov/1000);
+    }
+    
+    if (rotation > 359) rotation = 0;
+
+    
+}
+
+void testApp::detectMotion(){
+    
+    int threshold = 50;
+		
+		diffImage.absDiff(grayImage,prevGrayImage);
+		diffImage.threshold(threshold);
+		
+		prevGrayImage = grayImage;
+    
+        totalMov = diffImage.countNonZeroInRegion(0, 0, kinect.width, kinect.height);
+    
+        //cout << totalMov << endl;
+
+    
+}
+
