@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 void testApp::setup(){
     
-    sender.setup("localhost", 4567);
+    sender.setup("localhost", 6534);
     
     ofToggleFullscreen();
     ofSetVerticalSync(true);

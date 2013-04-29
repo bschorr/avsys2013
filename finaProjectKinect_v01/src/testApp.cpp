@@ -22,8 +22,8 @@ void testApp::setup(){
 	grayThreshNear.allocate(kinect.width, kinect.height);
 	grayThreshFar.allocate(kinect.width, kinect.height);
 	
-	nearThreshold = 230;
-	farThreshold = 70;
+	nearThreshold = 220;
+	farThreshold = 100;
 	bThreshWithOpenCV = true;
 		
 	// zero the tilt on startup
@@ -69,7 +69,7 @@ void testApp::update(){
     
     // find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
     // also, find holes is set to true so we will get interior contours as well....
-    contourFinder.findContours(grayImage, 100, (kinect.width*kinect.height)/2, 1, false);
+    contourFinder.findContours(grayImage, 900, (kinect.width*kinect.height)/2, 6, false);
 
 
     //sequencer update
@@ -125,8 +125,11 @@ void testApp::draw(){
         y = ofMap(y, 0, kinect.height, 0, ofGetScreenHeight());
         dots myDot;
         myDot.setup(x, y);
+        blobAngle = myDot.angle;
         
-        if ((int)rotation == (int)myDot.angle) {
+        //if (rotation - myDot.angle < 1 && rotation - myDot.angle > - 1 ) {
+        
+        if ((int)abs(rotation) == (int)myDot.angle ) {
             
             ofSetColor(0);
             
@@ -135,14 +138,15 @@ void testApp::draw(){
             message.addIntArg( myDot.note );
             sender.sendMessage(message);
             
-            //cout << int(myDot.angle) << endl;
             
             
         }
         
         prevRotation = rotation;
         //cout << prevRotation << endl;
-        //cout << rotation << endl;
+        cout << (int)abs (rotation) << endl;
+        cout << int(myDot.angle) << endl;
+
         myDot.draw();
 
 	}
@@ -223,16 +227,18 @@ void testApp::updateSequencer(){
     }
     
     if (maxBrightness > 200) {
-        rotation += speed;
+        rotation += 1;
         
     } else {
         
-        rotation -= speed;
+        rotation -= 1;
     }
     
-    if (rotation > 359) rotation = 0;
+    if (rotation > 360) rotation = 0;
+    if (rotation < 0) rotation = 360 - rotation;
     
     prevSpeed = speed;
+    //rotation = abs(rotation);
 
     
 }
