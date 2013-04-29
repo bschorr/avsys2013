@@ -3,6 +3,8 @@
 //--------------------------------------------------------------
 void testApp::setup(){
     
+    sender.setup("localhost", 4567);
+    
     ofToggleFullscreen();
     ofSetVerticalSync(true);
     
@@ -25,6 +27,10 @@ void testApp::setup(){
 	// zero the tilt on startup
 	angle = 0;
 	kinect.setCameraTiltAngle(angle);
+    
+    //set position of the circle
+    circle.set(ofGetScreenWidth()/2, ofGetScreenHeight()/2);
+
 	
 }
 
@@ -53,17 +59,46 @@ void testApp::update(){
     
     // find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
     // also, find holes is set to true so we will get interior contours as well....
-    contourFinder.findContours(grayImage, 10, (kinect.width*kinect.height)/2, 100, false);
+    contourFinder.findContours(grayImage, 100, (kinect.width*kinect.height)/2, 1, false);
 
+
+    //sequencer update
+    
+    rotation += 1;
+    if (rotation > 359) rotation = 0;
+
+    
 }
 
 //--------------------------------------------------------------
 void testApp::draw(){
     
+    //draw background, circle, reader etc
+    ofBackground (0, 230, 230);
+    ofSetColor(0, 200, 200);
+    ofFill();
+    ofSetCircleResolution(100);
+    
+    radius = 300;
+    
+    ofPushMatrix();
+    
+    ofTranslate(circle.x, circle.y);
+    ofCircle(0, 0, radius);
+    
+    ofSetColor(255);
+    ofSetLineWidth(5);
+    ofRotate(rotation);
+    ofLine(0, 0, 0, radius);
+    
+    ofPopMatrix();
+    
+    
+    // do the kinect thing
     ofSetColor(255, 255, 255);
     
     // draw from the live kinect
-    kinect.drawDepth(0, 0, ofGetScreenWidth(), ofGetScreenHeight());
+    //kinect.drawDepth(0, 0, ofGetScreenWidth(), ofGetScreenHeight());
     kinect.draw(420, 10, 400, 300);
     
     grayImage.draw(10, 320, 400, 300);
@@ -80,18 +115,47 @@ void testApp::draw(){
         y = (y + y + contourFinder.blobs[i].boundingRect.height) /2;
         x = ofMap(x, 0, kinect.width, 0, ofGetScreenWidth());
         y = ofMap(y, 0, kinect.height, 0, ofGetScreenHeight());
-        ofPoint myNote;
-        myNote.set(x, y);
-        notes.push_back( myNote );
+        dots myDot;
+        myDot.setup(x, y);
+        notes.push_back( myDot );
         
-        ofCircle(myNote, 20);
+        //ofCircle(myNote, 20);
         
 		/*ofRect( contourFinder.blobs[i].boundingRect.x, contourFinder.blobs[i].boundingRect.y,
                contourFinder.blobs[i].boundingRect.width, contourFinder.blobs[i].boundingRect.height );
          */
 	}
     
-
+    for (int i = 0; i < notes.size(); i++) {
+        
+        ofSetColor(255);
+        
+        //cout << rotation << endl;
+        // << int(notes[i].angle) << endl;
+        
+        if (rotation == int(notes[i].angle)) {
+            
+            ofSetColor(0);
+            
+            ofxOscMessage message;
+            message.setAddress("/playtone");
+            message.addIntArg( notes[i].note );
+            sender.sendMessage(message);
+            
+            cout << int(notes[i].angle) << endl;
+            
+            
+        }
+        
+        notes[i].draw();
+        
+        
+        
+    }
+    
+    
+    
+    
 }
 
 //--------------------------------------------------------------

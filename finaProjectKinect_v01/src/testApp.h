@@ -3,6 +3,8 @@
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 #include "ofxKinect.h"
+#include "dots.h"
+#include "ofxOsc.h"
 
 class testApp : public ofBaseApp{
 
@@ -39,7 +41,15 @@ class testApp : public ofBaseApp{
 	
         int angle;
     
-        vector <ofPoint> notes;
+        int rotation;
+        vector <dots> notes;
+        ofPoint circle;
+        float radius;
+    
+        ofxOscSender sender;
+
+    
+        //vector <ofPoint> notes;
 
 	
 
