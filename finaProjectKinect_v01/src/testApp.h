@@ -48,6 +48,8 @@ class testApp : public ofBaseApp{
         int angle;
     
         float rotation;
+        float prevRotation;
+    
         vector <dots> notes;
         ofPoint circle;
         float radius;
@@ -56,6 +58,8 @@ class testApp : public ofBaseApp{
 
         int maxBrightness;
         int totalMov;
+        float speed;
+        float prevSpeed;
     
         //vector <ofPoint> notes;
 

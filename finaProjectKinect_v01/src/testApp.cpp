@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 void testApp::setup(){
     
-    sender.setup("localhost", 4567);
+    sender.setup("localhost", 6534);
     
     ofToggleFullscreen();
     ofSetVerticalSync(true);
@@ -32,6 +32,8 @@ void testApp::setup(){
     
     //set position of the circle
     circle.set(ofGetScreenWidth()/2, ofGetScreenHeight()/2);
+    
+    prevSpeed = 0;
 
 	
 }
@@ -105,10 +107,10 @@ void testApp::draw(){
     
     // draw from the live kinect
     //kinect.drawDepth(0, 0, ofGetScreenWidth(), ofGetScreenHeight());
-    kinect.draw(420, 10, 400, 300);
+    //kinect.draw(420, 10, 400, 300);
     
-    grayImage.draw(10, 320, 400, 300);
-    contourFinder.draw(10, 320, 400, 300);
+    grayImage.draw(10, ofGetScreenHeight()-160, 200, 150);
+    contourFinder.draw(10, ofGetScreenHeight()-160, 200, 150);
     
     //notes.clear();
     ofSetColor(255, 0, 0);
@@ -124,7 +126,7 @@ void testApp::draw(){
         dots myDot;
         myDot.setup(x, y);
         
-        if (rotation == int(myDot.angle)) {
+        if ((int)rotation == (int)myDot.angle) {
             
             ofSetColor(0);
             
@@ -138,7 +140,9 @@ void testApp::draw(){
             
         }
         
-
+        prevRotation = rotation;
+        //cout << prevRotation << endl;
+        //cout << rotation << endl;
         myDot.draw();
 
 	}
@@ -205,6 +209,10 @@ void testApp::exit() {
 
 void testApp::updateSequencer(){
     
+    speed = totalMov/1000;
+    speed = 0.99 * prevSpeed + 0.01 * speed;
+    speed = MIN (speed, 1);
+    
     unsigned char * pix = grayImage.getPixels();
     
     maxBrightness = 0;
@@ -215,14 +223,16 @@ void testApp::updateSequencer(){
     }
     
     if (maxBrightness > 200) {
-        rotation += MAX (0.1, totalMov/1000);
+        rotation += speed;
         
     } else {
         
-        rotation -= MAX (0.1, totalMov/1000);
+        rotation -= speed;
     }
     
     if (rotation > 359) rotation = 0;
+    
+    prevSpeed = speed;
 
     
 }
