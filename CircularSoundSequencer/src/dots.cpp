@@ -20,7 +20,7 @@ void dots::setup (float x, float y) {
     angle = (angle * 180 / PI) * -1;
     }
     
-    float tempNote  = ofDist(pos.x, pos.y, ofGetScreenWidth()/2, ofGetScreenHeight()/2);
+    float tempNote  = ofDist(pos.x, pos.y, ofGetScreenWidth()/2,ofGetScreenHeight()/2);
     note = int (ofMap (tempNote, 0, 300, 0, 17));
     
 }

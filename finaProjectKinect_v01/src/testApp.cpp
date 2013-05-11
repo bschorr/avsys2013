@@ -32,9 +32,6 @@ void testApp::setup(){
     
     //set position of the circle
     circle.set(ofGetScreenWidth()/2, ofGetScreenHeight()/2);
-    
-    prevSpeed = 0;
-
 	
 }
 
@@ -69,11 +66,7 @@ void testApp::update(){
     
     // find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
     // also, find holes is set to true so we will get interior contours as well....
-    contourFinder.findContours(grayImage, 900, (kinect.width*kinect.height)/2, 6, false);
-
-
-    //sequencer update
-    
+    contourFinder.findContours(grayImage, 900, (kinect.width*kinect.height)/2, 6, false);    
     
     
 }
@@ -87,7 +80,7 @@ void testApp::draw(){
     ofFill();
     ofSetCircleResolution(100);
     
-    radius = 300;
+    radius = 390;
     
     ofPushMatrix();
     
@@ -123,9 +116,11 @@ void testApp::draw(){
         y = (y + y + contourFinder.blobs[i].boundingRect.height) /2;
         x = ofMap(x, 0, kinect.width, 0, ofGetScreenWidth());
         y = ofMap(y, 0, kinect.height, 0, ofGetScreenHeight());
+        
+        if (ofDist(circle.x, circle.y, x, y) < radius){
+            
         dots myDot;
         myDot.setup(x, y);
-        blobAngle = myDot.angle;
         
         //if (rotation - myDot.angle < 1 && rotation - myDot.angle > - 1 ) {
         
@@ -144,13 +139,14 @@ void testApp::draw(){
         
         prevRotation = rotation;
         //cout << prevRotation << endl;
-        cout << (int)abs (rotation) << endl;
-        cout << int(myDot.angle) << endl;
+        //cout << (int)abs (rotation) << endl;
+        //cout << int(myDot.angle) << endl;
 
         myDot.draw();
 
 	}
-    
+        
+    }
     
     
     
@@ -213,10 +209,6 @@ void testApp::exit() {
 
 void testApp::updateSequencer(){
     
-    speed = totalMov/1000;
-    speed = 0.99 * prevSpeed + 0.01 * speed;
-    speed = MIN (speed, 1);
-    
     unsigned char * pix = grayImage.getPixels();
     
     maxBrightness = 0;
@@ -237,7 +229,6 @@ void testApp::updateSequencer(){
     if (rotation > 360) rotation = 0;
     if (rotation < 0) rotation = 360 - rotation;
     
-    prevSpeed = speed;
     //rotation = abs(rotation);
 
     

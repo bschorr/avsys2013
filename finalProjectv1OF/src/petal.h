@@ -14,7 +14,7 @@
 class Petal {
 public:
     
-    void setup();
+    void setup(float x, float y);
 	void draw();
     
     float cx;

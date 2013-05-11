@@ -52,14 +52,12 @@ class testApp : public ofBaseApp{
     
         vector <dots> notes;
         ofPoint circle;
-        float blobAngle;
         float radius;
     
         ofxOscSender sender;
 
         int maxBrightness;
         int totalMov;
-        float speed;
         float prevSpeed;
     
         //vector <ofPoint> notes;

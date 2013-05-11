@@ -13,7 +13,7 @@ void testApp::setup(){
 
 //--------------------------------------------------------------
 void testApp::update(){
-
+    prevRotation = rotation;
     rotation += 1;
     
     if (rotation > 359) rotation = 0;
@@ -50,7 +50,7 @@ void testApp::draw(){
         //cout << rotation << endl;
         // << int(notes[i].angle) << endl;
         
-        if (rotation == int(notes[i].angle)) {
+        if (prevRotation <= int(notes[i].angle) && rotation >= int(notes[i].angle)) {
          
             ofSetColor(0);
             

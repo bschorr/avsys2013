@@ -8,10 +8,12 @@
 
 #include "petal.h"
 
-void Petal::setup() {
+void Petal::setup(float x, float y) {
+    cx = x;
+    cy = y;
     
-    cx = ofGetWidth()/2;
-    cy = ofGetHeight()/2;
+   // cx = ofGetWidth()/2;
+   // cy = ofGetHeight()/2;
     
     counterCurve = ofRandom(2*PI);
     counterDiam = ofRandom(0.2);
@@ -33,10 +35,13 @@ void Petal::setup() {
     curveMult = ofRandom(2, 3);
     diamMult = ofRandom(10, 30);
     
+    ofRotate(30);
+    
     
 };
 
 void Petal::draw () {
+ 
     
     diam = ((sin (counterDiam)) * diamMult);
     
@@ -50,6 +55,8 @@ void Petal::draw () {
     cy -= vel;
     
     if (diam < 0) petal = false;
+    
+    
     
     
 };

@@ -19,11 +19,11 @@ void testApp::update(){
 //--------------------------------------------------------------
 void testApp::draw(){
     
-    ofSetColor(255, 255, 255);
+    ofSetColor(255, 255, 255, 10);
     ofFill();
-    //ofRect(0, 0, ofGetWidth(), ofGetHeight());
+    ofRect(0, 0, ofGetWidth(), ofGetHeight());
     ofNoFill();
-    ofSetColor(0, 0, 0, alpha);
+    ofSetColor(alpha, 255, 0);
     ofSetLineWidth(0.25);
     
     
@@ -77,7 +77,7 @@ void testApp::mouseReleased(int x, int y, int button){
     for (int i =0; i < 10; i++) {
         
     Petal myPetal;
-    myPetal.setup();
+    myPetal.setup(mouseX, mouseY);
     petals.push_back( myPetal );
     }
     

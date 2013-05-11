@@ -22,7 +22,7 @@ class testApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
     
-        int rotation;
+        int rotation, prevRotation;
         vector <dots> notes;
         ofPoint circle;
         float radius;
