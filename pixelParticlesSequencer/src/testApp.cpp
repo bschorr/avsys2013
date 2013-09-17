@@ -5,40 +5,40 @@
 void testApp::setup()
 {
     
-    kick.loadSound("kick4.wav");
-    kick.setVolume(0.5);
-    hat.loadSound("hat4.wav");
-    hat.setVolume(0.5);
-
-    
-    ofSetWindowShape(ofGetScreenWidth(), ofGetScreenHeight());
+    //ofSetWindowShape(ofGetScreenWidth(), ofGetScreenHeight());
     ofToggleFullscreen();
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
+    
+    img.loadImage("texture2.png");
+    hue = 0;
+    bri = 150;
+    ofHideCursor();
     
     //sequencer setup
     sender.setup("localhost", 6534);
+    recvr.setup(6666);
     circle.set(ofGetWidth()/2, ofGetHeight()/2);
-    rotation = 180;
-
+    rotation = 0;
     
     //Set the background to black
     ofBackground( 0 , 0 , 0 ) ; 
-    //if the app performs slowly raise this number
   
     //Loop through all the rows
-    for ( float i = 0 ; i < 360 ; i += 0.1 )
+    for ( float i = 0 ; i < 360 ; i += 0.2)
     {
-            ofColor color;
-            color = ofColor (255);       //red pixel
+        
+        ofColor color = ofColor::fromHsb(hue, 255, bri);
+        //red pixel
             //color.g = pixels[index+1] ;     //blue pixel
             //color.b = pixels[index+2] ;     //green pixel
+            int tempRadius = ofRandom(130, 150);
             int x = ofGetWidth()/2 + cos(i)*150;
             int y = ofGetHeight()/2 + sin(i)*150;
         
-            particles.push_back( Particle ( ofPoint ( x, y ) , color ) ) ;
+            particles.push_back( Particle ( ofPoint ( x, y ) , color) ) ;
     }
     
     ofSetFrameRate( 30 ) ; 
-    //numParticles = ( image.width * image.height ) / sampling ;
     numParticles = particles.size() ;
 
     
@@ -47,22 +47,23 @@ void testApp::setup()
     forceRadius = 45 ; 
     friction = 0.85 ; 
     springFactor = 0.12 ; 
-    springEnabled = true ; 
+    springEnabled = true ;
+    inc = 2;
 }
 
 //--------------------------------------------------------------
 void testApp::update(){
     
-    if (kickPlay == true && ofGetFrameNum()%15 == 0) kick.play();
-    if (hatPlay == true && ofGetFrameNum()%15 == 7) hat.play();
-
+    oscReceiver();
     
     //sequencer update
     prevRotation = rotation;
-    rotation += 1;
+    rotation += inc;
+    hue += 1;
     
     if (rotation > 360) rotation = 0;
     if (rotation < 0) rotation = 360-rotation;
+    if (hue > 255) hue = 0;
     
     
     ofPoint diff ;          //Difference between particle and mouse
@@ -104,87 +105,80 @@ void testApp::update(){
     
         p->defineAngleNote();
         
-        //float tempNote  = ofDist(mouseX, mouseY, ofGetWidth()/2, ofGetHeight()/2);
-        
-        //cout << tempNote << endl;
-
     }
+    
+    
 }
 
 //--------------------------------------------------------------
 void testApp::draw() {
     
-    //draw sequencer
-    radius = 300;
+    //draw sequencer needle
     
-    ofPushMatrix();
+    /*ofPushMatrix();
     
     ofTranslate(circle.x, circle.y);
-    //ofCircle(0, 0, radius);
-    
     ofSetColor(255);
-    //ofSetLineWidth(5);
     ofRotate(rotation);
     ofLine(0, 0, 0, radius);
     
     ofPopMatrix();
+     */
     
-   
-    //Begin the openGL Drawing Mode
-    glBegin(GL_POINTS);
+    //ofSetColor(255, 128);
+    //ofCircle(x, y, 20);
     
-    //Triangles look Cool too 
-    //glBegin(GL_TRIANGLES);
-
     //Create an iterator to cycle through the vector
-    vector<Particle>::iterator p ; 
+    vector<Particle>::iterator p ;
+    
     for ( p = particles.begin() ; p != particles.end() ; p++ )
     //for ( int i = 0 ; i < particles.size() ; i++ )
     {
-        glColor3ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b);
-        glVertex3f(p->position.x, p->position.y , 0 );
-        //ofSetColor(255);
-        //ofFill();
-        //ofCircle(p->position.x, p->position.y, 3);
         
         //playing the notes
         
-        Boolean play = false;
+        play = false;
         
-        if (prevRotation <= int(p->angle) && rotation >= int(p->angle)) play = true;
+        if (prevRotation <= int(p->angle) && rotation >= int(p->angle) && abs(rotation - prevRotation) < abs (inc*2)) play = true;
         
-        if (prevRotation >= int(p->angle) && rotation <= int(p->angle)) play =true;
+        if (prevRotation >= int(p->angle) && rotation <= int(p->angle) && abs(rotation - prevRotation) < abs(inc*2)) play =true;
+        
+        
+        p->color.setHue(hue);
         
         if (play == true) {
             
-            ofSetColor(0);
+            p->color.a = 255;
+            p->color.setBrightness(255);
+            p->color.setSaturation(255);
+            p->size = 30;
             
             ofxOscMessage message;
             message.setAddress("/playtone");
-            //tone = notePlayer[y].frequency;
             message.addIntArg( p->note );
             sender.sendMessage(message);
-            averageNote += p->note;
-            particleCounter++;
-            play = false;
             
-            //cout << p->note << endl;
+        } else {
             
+            p->color.setBrightness(p->color.getBrightness()-10);
+            p->color.setSaturation(p->color.getSaturation()+10);
+            p->size -= 0.5;
+            p->color.a -= 10;
+
             
         }
         
+        if (p->color.a < 80) p->color.a = 80;
+        if (p->color.getBrightness() < 150) p->color.setBrightness(150);
+        if (p->color.getSaturation() > 200) p->color.setSaturation(200);
+        if (p->size < 10) p->size=10;
         
+         
+        // draw the particles
+        ofSetColor((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b, (unsigned char)p->color.a);
+        img.draw(p->position.x, p->position.y, p->size, p->size);
         
     }
-    if (particleCounter == 0) particleCounter = 1;
-    averageNote /= particleCounter;
-    //cout << averageNote << endl;
-    
-    averageNote = 0;
-    particleCounter=0;
-    
-    
-    glEnd();
     
     ofSetColor ( 255 , 255 , 255 ) ;
     
@@ -194,9 +188,14 @@ void testApp::draw() {
     
     "\n # of particles : " + ofToString( numParticles ) +
     
-    " \n fps:" +ofToString( ofGetFrameRate() ) ;
+    " \n fps:" +ofToString( ofGetFrameRate() );
     
-    ofDrawBitmapString(output ,20,666);
+    
+    if (debugtext)ofDrawBitmapString(output ,20,666);
+    
+    ofSetColor(255, 100);
+    ofCircle (mouseX, mouseY, 5, 5);
+
 }
 
 //--------------------------------------------------------------
@@ -210,17 +209,13 @@ void testApp::keyPressed(int key){
             
         case 's':
         case 'S':
-            springEnabled = !springEnabled ; 
+            springEnabled = !springEnabled ;
             break ;
+
             
-        case 'k':
-        case 'K':
-            kickPlay = !kickPlay ;
-            break ;
-            
-        case 'h':
-        case 'H':
-            hatPlay = !hatPlay ;
+        case 't':
+        case 'T':
+            debugtext = !debugtext ;
             break ;
     }
 }
@@ -255,3 +250,47 @@ void testApp::windowResized(int w, int h){
 
 }
 
+void testApp::oscReceiver () {
+    
+    ofxOscMessage message;
+    recvr.getNextMessage(&message);
+    
+    string address = message.getAddress();
+    cout << "message address: " << message.getAddress() << endl;
+    cout << "message num arguments: " << message.getNumArgs() << endl;
+    
+    for (int i = 0; i < message.getNumArgs(); i++){
+        cout << "argument " << i << " is type " << message.getArgTypeName(i);
+        
+        if (message.getArgType(i) == OFXOSC_TYPE_FLOAT){
+            if (address.compare("/1/speed")== 0)inc = message.getArgAsFloat(i);
+            if (address.compare("/1/spring")== 0)springEnabled =message.getArgAsFloat(i);
+            if (address.compare("/1/repel")== 0)cursorMode = message.getArgAsFloat(i);
+            if (address.compare("/1/radius")== 0) {
+                
+            std::vector<Particle>::iterator p ;
+            for ( p = particles.begin() ; p != particles.end() ; p++ )
+            {
+                
+                p->spawnPoint.x = ofGetWidth()/2 + cos(p - particles.begin()
+)* message.getArgAsFloat(i);
+                
+                p->spawnPoint.y = ofGetHeight()/2 + sin(p - particles.begin()
+                                      )* message.getArgAsFloat(i);
+                
+            }
+            }
+        
+            
+                
+                ;
+
+            cout << " val = " << message.getArgAsFloat(i) << endl;
+        } else if (message.getArgType(i) == OFXOSC_TYPE_INT32){
+            cout << " val = " << message.getArgAsInt32(i) << endl;
+        } else if (message.getArgType(i) == OFXOSC_TYPE_STRING){
+            cout << " val = " << message.getArgAsString(i) << endl;
+        }
+        
+}
+}

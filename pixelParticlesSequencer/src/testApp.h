@@ -20,9 +20,10 @@ class testApp : public ofBaseApp{
 		void mousePressed(int x, int y, int button);
 		void mouseReleased(int x, int y, int button);
 		void windowResized(int w, int h);
-        
+        void oscReceiver();
+    
        
-        ofImage image ;                 //image to load
+        ofImage image ;
         int sampling ;                  //pixels to skip
         vector<Particle> particles ;    //vector to store pixels
         int numParticles ;          //Number of particles 
@@ -34,20 +35,23 @@ class testApp : public ofBaseApp{
         float springFactor ;          //how much the particle "springs" back to origin
         int cursorMode ;            
     
-    int rotation, prevRotation;
+    float rotation, prevRotation;
     ofPoint circle;
     float radius;
-    int particleCounter;
-    int averageNote;
+    
     ofxOscSender sender;
+    ofxOscReceiver recvr;
+    float inc;
     
-    ofSoundPlayer kick;
-    ofSoundPlayer hat;
+    bool play;
     
-    bool kickPlay;
-    bool hatPlay;
+    ofImage img;
+    unsigned char hue;
+    unsigned char bri;
 
-
+    float x, y;
+    
+    bool debugtext;
     
     
 };

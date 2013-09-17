@@ -1,9 +1,10 @@
 //
 //  Particle.h
-//  PixelForces
+//  PixelForces 2
 //
-//  Created by Ben McChesney on 7/2/11.
-//  Copyright 2011 Helios Interactive. All rights reserved.
+//  Created by Bernardo Schorr 2013.
+//
+//  Based in code by Ben McChesney on 7/2/11.
 //
 //  A Simple Particle Class
 
@@ -16,12 +17,23 @@ class Particle
 {
     public : 
         Particle() ;
-        Particle( ofPoint _position , ofColor _color ) 
+        Particle( ofPoint _position , ofColor _color )
         {
             position = _position ; 
             color = _color ; 
             velocity = ofPoint ( ofRandom ( -5 , 5 ) , ofRandom ( -5 , 5 ) ) ; 
             spawnPoint = _position ;
+            
+            angle = atan2(position.x - ofGetWidth()/2, position.y - ofGetHeight()/2);
+            
+            size = 10;
+            
+            if (position.x > ofGetWidth()/2){
+                angle = 360 - (angle * 180 / PI);
+                
+            } else {
+                angle = (angle * 180 / PI) * -1;
+            }
             
             
         }
@@ -48,6 +60,7 @@ class Particle
         
     }
     
+    
         ofPoint position , velocity ;
         ofPoint acceleration ;          //smoothing applied to velocity
         ofPoint spawnPoint ;            //original location to line up the picture
@@ -56,6 +69,7 @@ class Particle
         float angle;
     
         float note;
+    int size;
 
 };
 #endif
